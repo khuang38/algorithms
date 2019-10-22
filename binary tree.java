@@ -604,3 +604,141 @@ public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
        }
        return root;
    }
+
+   // lintcode 595 Binary Tree Longest Consecutive Sequence
+   private int longest = 1;
+      public int longestConsecutive(TreeNode root) {
+          // write your code here
+          helper(root);
+          return longest;
+
+      }
+
+      public int helper(TreeNode root){
+           if(root == null){
+              return 0;
+          }
+          int left = helper(root.left);
+          int right = helper(root.right);
+          int cur_longest = 1; //at least we have a root with length 1
+          if(root.left != null && root.val + 1 == root.left.val){
+              cur_longest = Math.max(cur_longest, left + 1);
+          }
+          if(root.right != null && root.val + 1 == root.right.val){
+              cur_longest = Math.max(cur_longest, right + 1);
+          }
+          if(cur_longest > longest){
+              longest = cur_longest;
+          }
+          return cur_longest;
+      }
+
+   //lintcode 614 Binary Tree Longest Consecutive Sequence II
+   //记住二叉树中只可能上下一次！！！ /\
+   //                             /  \
+   class Resulttype{
+       public int max_up; //表示从此root开始往下最长递增sequence
+       public int max_down;//表示从此root开始往下最长递减sequence
+       public int max_len; //表示此root的子树中最常的consecutive sequence
+       public Resulttype(int max, int min, int len){
+           this.max_up = max;
+           this.max_down = min;
+           this.max_len = len;
+       }
+   }
+   public class Solution {
+       /**
+        * @param root: the root of binary tree
+        * @return: the length of the longest consecutive sequence path
+        */
+       public int longestConsecutive2(TreeNode root) {
+           // write your code here
+           if(root == null) return 0;
+           return helper(root).max_len;
+       }
+
+       public Resulttype helper(TreeNode root){
+           if(root == null){
+               return new Resulttype(0, 0, 0);
+           }
+
+           Resulttype left = helper(root.left);
+           Resulttype right = helper(root.right);
+           int cur_longest = 1; //at least we have root 1
+           int up = 0, down = 0;
+
+           if(root.left != null && root.val + 1 == root.left.val){
+               up = Math.max(up, left.max_up + 1);
+           }
+           if(root.left != null && root.val - 1 == root.left.val){
+               down = Math.max(down, left.max_down + 1);
+           }
+            if(root.right != null && root.val + 1 == root.right.val){
+               up = Math.max(up, right.max_up + 1);
+           }
+           if(root.right != null && root.val - 1 == root.right.val){
+               down = Math.max(down, right.max_down + 1);
+           }
+           cur_longest += (up + down);
+           cur_longest = Math.max(cur_longest, Math.max(left.max_len, right.max_len));
+           return new Resulttype(up, down, cur_longest);
+       }
+   }
+
+   //lintcode 619 Binary Tree Longest Consecutive Sequence III
+   //very similar to lintcode 614, the only difference is to iterative through every child of each node
+   /**
+    * Definition for a multi tree node.
+    * public class MultiTreeNode {
+    *     int val;
+    *     List<TreeNode> children;
+    *     MultiTreeNode(int x) { val = x; }
+    * }
+    */
+   class Resulttype{
+       public int max_up;
+       public int max_down;
+       public int max_length;
+       public Resulttype(int up, int down, int len){
+           this.max_up = up;
+           this.max_down = down;
+           this.max_length = len;
+       }
+   }
+   public class Solution {
+       /**
+        * @param root the root of k-ary tree
+        * @return the length of the longest consecutive sequence path
+        */
+       public int longestConsecutive3(MultiTreeNode root) {
+           // Write your code here
+           if(root == null){
+               return 0;
+           }
+           return helper(root).max_length;
+       }
+
+       public Resulttype helper(MultiTreeNode root){
+           if(root == null){
+               return new Resulttype(0, 0, 0);
+           }
+           int up = 0, down = 0;
+           int max_length = 0;
+           for(MultiTreeNode node : root.children){
+               Resulttype result = helper(node);
+               if(root.val + 1 == node.val){
+                   up = Math.max(up, result.max_up + 1);
+               }
+               if(root.val - 1 == node.val){
+                   down = Math.max(down, result.max_down + 1);
+               }
+               if(result.max_length > max_length){
+                   max_length = result.max_length;
+               }
+           }
+           //up + down + 1 means the longest consecutive sequence when 转折点 is at root
+           max_length = Math.max(up + down + 1, max_length);
+           return new Resulttype(up, down, max_length);
+       }
+   }
+   
