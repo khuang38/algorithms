@@ -113,7 +113,7 @@ public ArrayList<Integer> postorderTraversal(TreeNode root) {
 }
 
 //lintcode 69 Binary Tree Level Order Traversal
-//use BST for level order traversal (queue)
+//use BFS for level order traversal (queue)
 public List<List<Integer>> levelOrder(TreeNode root) {
         // write your code here
         List<List<Integer>> results = new ArrayList<>();
@@ -416,8 +416,23 @@ public TreeNode lastnode = null;
        lastnode = root;
        TreeNode right = root.right;
        flatten(root.left);
-       flatten(right);
+       flatten(right); //注意！！！
    }
+
+//how about inorder?
+//注意不需要  right = root.right!因为 inorder 左根右的顺序保证进入右子树的时候root.right不会被覆盖
+//相反，preorder的话根左右的顺序中，进入右子树后root.right早已被覆盖！！！！！
+if (root == null) {
+    return;
+}
+flatten(root.left);
+if(lastNode != null) {
+  lastNode.left = null;
+  lastNode.right = root;
+}
+lastNode = root;
+flatten(root.right);
+
 //version 3 右左跟反过来 *************
 private TreeNode lastNode = null;
     /**
@@ -634,12 +649,20 @@ public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
       }
 
    //lintcode 614 Binary Tree Longest Consecutive Sequence II
+   //The path could be start and end at any node in the tree
    //记住二叉树中只可能上下一次！！！ /\
    //                             /  \
+//          1
+//         / \
+//       2   0
+//     /
+//    3
+//
+// 0-1-2-3
    class Resulttype{
        public int max_up; //表示从此root开始往下最长递增sequence
        public int max_down;//表示从此root开始往下最长递减sequence
-       public int max_len; //表示此root的子树中最常的consecutive sequence
+       public int max_len; //表示此root的子树中最长的consecutive sequence
        public Resulttype(int max, int min, int len){
            this.max_up = max;
            this.max_down = min;
@@ -687,6 +710,15 @@ public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
 
    //lintcode 619 Binary Tree Longest Consecutive Sequence III
    //very similar to lintcode 614, the only difference is to iterative through every child of each node
+
+//             5
+//          /     \
+//         6       4
+//        /|\     /|\
+//       7 5 8   3 5 31
+//
+// return 5, // 3-4-5-6-7
+
    /**
     * Definition for a multi tree node.
     * public class MultiTreeNode {
@@ -741,6 +773,36 @@ public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
            return new Resulttype(up, down, max_length);
        }
    }
+
+
+//leetcode 124. Binary Tree Maximum Path Sum
+//good problem, without use of result type
+class Solution {
+  int max_sum = Integer.MIN_VALUE;
+
+  public int max_gain(TreeNode node) {
+    if (node == null) return 0;
+
+    // max sum on the left and right sub-trees of node
+    int left_gain = Math.max(max_gain(node.left), 0); //use 0 here to deal with negative number
+    int right_gain = Math.max(max_gain(node.right), 0);
+
+    // the price to start a new path where `node` is a highest node
+    int price_newpath = node.val + left_gain + right_gain;
+
+    // update max_sum if it's better to start a new path
+    max_sum = Math.max(max_sum, price_newpath);
+
+    // for recursion :
+    // return the max gain if continue the same path
+    return node.val + Math.max(left_gain, right_gain);
+  }
+
+  public int maxPathSum(TreeNode root) {
+    max_gain(root);
+    return max_sum;
+  }
+}
 
 //lintcode 376 Binary Tree Path Sum
 //Given a binary tree, find all paths that sum of the nodes in the path equals to a given number target
@@ -907,3 +969,64 @@ public List<List<Integer>> binaryTreePathSum3(ParentTreeNode root, int target) {
        }
        path.remove(path.size() - 1);  //backtracking
    }
+
+//lintcode 95 Validate Binary Search Tree
+public boolean isValidBST(TreeNode root) {
+    if(root == null) return true;
+    return helper(root, Long.MIN_VALUE, Long.MAX_VALUE);
+}
+ public boolean helper(TreeNode root, long min, long max){
+    if(root == null){
+        return true;
+    }
+
+
+    boolean left = helper(root.left, min, root.val);
+    boolean right = helper(root.right, root.val, max);
+
+    if(root.val <= min || root.val >= max){
+        return false;
+    }
+    return left && right;
+}
+
+//lintcode 378 Convert Binary Tree to Doubly Linked List
+//simply do an inorder traversal and make use of dummy node
+public class Solution {
+    /**
+     * @param root: The root of tree
+     * @return: the head of doubly list node
+     */
+    private DoublyListNode dummy = null;
+    private DoublyListNode prev = null;
+    public DoublyListNode bstToDoublyList(TreeNode root) {
+        // write your code here
+        if(root == null){
+            return null;
+        }
+        prev = new DoublyListNode(-1);
+        dummy = prev;
+        helper(root);
+        return dummy.next;
+    }
+
+    private void helper(TreeNode root){
+        if(root == null){
+            return;
+        }
+        helper(root.left);
+        connect(root);
+        helper(root.right);
+    }
+
+    private void connect(TreeNode root){
+        if(root == null){
+            return;
+        }
+        DoublyListNode prev_node = prev;
+        DoublyListNode node = new DoublyListNode(root.val);
+        node.prev = prev_node;
+        prev_node.next = node;
+        prev = node;
+    }
+}
