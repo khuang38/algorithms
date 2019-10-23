@@ -741,4 +741,169 @@ public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
            return new Resulttype(up, down, max_length);
        }
    }
-   
+
+//lintcode 376 Binary Tree Path Sum
+//Given a binary tree, find all paths that sum of the nodes in the path equals to a given number target
+public List<List<Integer>> binaryTreePathSum(TreeNode root, int target) {
+       // Algorithm: Traverse
+       // Use recursion to traverse the tree in preorder, pass with a parameter
+       // `sum` as the sum of each node from root to current node.
+       // Put the whole path into result if the leaf has a sum equal to target.
+
+       List<List<Integer>> result = new ArrayList<>();
+       if (root == null) {
+           return result;
+       }
+
+       ArrayList<Integer> path = new ArrayList<Integer>();
+       path.add(root.val);
+       helper(root, path, root.val, target, result);
+       return result;
+   }
+
+   private void helper(TreeNode root,
+                       ArrayList<Integer> path,
+                       int sum,
+                       int target,
+                       List<List<Integer>> result) {
+
+       // meet leaf
+       if (root.left == null && root.right == null) {
+           if (sum == target) {
+               result.add(new ArrayList<Integer>(path)); //deep copy !!!!
+           }
+           return;
+       }
+
+       // go left
+       if (root.left != null) {
+           path.add(root.left.val);
+           helper(root.left, path, sum + root.left.val, target, result);
+           path.remove(path.size() - 1); //backtracking !!!!!!
+       }
+
+       // go right
+       if (root.right != null) {
+           path.add(root.right.val);
+           helper(root.right, path, sum + root.right.val, target, result);
+           path.remove(path.size() - 1);
+       }
+   }
+
+//version 2 divide and Conquer
+public List<List<Integer>> binaryTreePathSum(TreeNode root, int target) {
+       // write your code here
+       List<List<Integer>> ans = new ArrayList<>();
+
+       if(root == null){
+           return ans;
+       }
+
+       if(root.left == null && root.right == null && root.val == target){
+           List<Integer> path = new ArrayList<Integer>();
+           path.add(root.val);
+           ans.add(path);
+           return ans;
+       }
+
+       List<List<Integer>> left = binaryTreePathSum(root.left, target - root.val);
+       List<List<Integer>> right = binaryTreePathSum(root.right, target - root.val);
+
+       for(List<Integer> mypath : left){
+           mypath.add(0, root.val);
+           ans.add(mypath);
+       }
+
+       for(List<Integer> mypath : right){
+           mypath.add(0, root.val);
+           ans.add(mypath);
+       }
+       return ans;
+   }
+
+// lintcode 246 Binary Tree Path Sum II
+//The path does not need to start or end at the root or a leaf, but it must go in a straight line down
+//注意与 376 backtrack remove 两次区别！
+  public List<List<Integer>> binaryTreePathSum2(TreeNode root, int target) {
+       // Write your code here
+       List<List<Integer>> results = new ArrayList<List<Integer>>();
+       ArrayList<Integer> buffer = new ArrayList<Integer>();
+       if (root == null)
+           return results;
+       findSum(root, target, buffer, 0, results);
+       return results;
+   }
+
+   public void findSum(TreeNode head, int sum, ArrayList<Integer> buffer, int level, List<List<Integer>> results) {
+       if (head == null) return;
+       int tmp = sum;
+       buffer.add(head.val);
+       for (int i = level;i >= 0; i--) {
+           tmp -= buffer.get(i);
+           if (tmp == 0) {
+               List<Integer> temp = new ArrayList<Integer>();
+               for (int j = i; j <= level; ++j)
+                   temp.add(buffer.get(j));
+               results.add(temp);
+           }
+       }
+       findSum(head.left, sum, buffer, level + 1, results);
+       findSum(head.right, sum, buffer, level + 1, results);
+       buffer.remove(buffer.size() - 1);
+   }
+
+// lintcode 472 Binary Tree Path Sum III, hard!
+//the path could be start and end at any node in the tree, with parent pointer
+/*
+ * Definition of ParentTreeNode:
+ *
+ * class ParentTreeNode {
+ *     public int val;
+ *     public ParentTreeNode parent, left, right;
+ * }
+ */
+ //思路
+// 现在的题意是可以从任何一点出发，而且有parent节点。
+// 那么我们其实是traverse一遍这棵树，在每一点，我们出发找有没有符合条件的路径。
+// 在每一点我们可以有三个方向：左边，右边，和上面。但是我们需要避免回头，所以需要一个from节点的参数。
+public List<List<Integer>> binaryTreePathSum3(ParentTreeNode root, int target) {
+       // write your code here
+       List<List<Integer>> ans = new ArrayList<>();
+       if(root == null){
+           return ans;
+       }
+       dfs(root, target, ans);
+       return ans;
+   }
+   //枚举每一个node作为起始点
+   public void dfs(ParentTreeNode root, int target, List<List<Integer>> ans){
+       if(root == null){
+           return;
+       }
+       List<Integer> path = new ArrayList<>();
+       findsum(root, target, ans, path, null);
+
+       dfs(root.left, target, ans);
+       dfs(root.right, target, ans);
+   }
+   //以此 node 为 root 遍历整颗树搜索 sum
+   public void findsum(ParentTreeNode root, int target, List<List<Integer>> ans, List<Integer> path, ParentTreeNode from){
+       if(root == null){
+           return ;
+       }
+       path.add(root.val);
+       target -= root.val;
+       if(target == 0){
+           ans.add(new ArrayList<Integer>(path));
+       }
+       if(root.left != null && root.left != from){   //向左儿子走
+           findsum(root.left, target, ans, path, root);
+       }
+        if(root.parent != null && root.parent != from){ //向父节点走
+           findsum(root.parent, target, ans, path, root);
+       }
+        if(root.right != null && root.right != from){ //向右儿子走
+           findsum(root.right, target, ans, path, root);
+       }
+       path.remove(path.size() - 1);  //backtracking
+   }
