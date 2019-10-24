@@ -1030,3 +1030,79 @@ public class Solution {
         prev = node;
     }
 }
+
+//lintcode 1534 Convert Binary Search Tree to Sorted Doubly Linked List
+//similar to flatten binary tree to linked list
+//use two global variables
+//note: inorder traversal of bst -> non-decreasing order
+private TreeNode first = null;
+   private TreeNode last = null;
+   public TreeNode treeToDoublyList(TreeNode root) {
+       // Write your code here.
+       if(root == null){
+           return null;
+       }
+       helper(root);
+       last.right = first;
+       first.left = last;
+       return first;
+
+   }
+
+   public void helper(TreeNode root){
+       if(root == null){
+           return;
+       }
+       helper(root.left);
+       if(first != null){
+           last.right = root;
+           root.left = last;
+       }
+       else{
+           first = root;
+       }
+       last = root;
+       helper(root.right);
+   }
+
+//lintcode 86 Binary Search Tree Iterator
+public class BSTIterator {
+    Stack<TreeNode> stack = null;
+
+    public void addNode(TreeNode root){
+        while(root != null){
+            stack.push(root);
+            root = root.left;
+        }
+    }
+
+    /*
+    * @param root: The root of binary tree.
+    */public BSTIterator(TreeNode root) {
+        // do intialization if necessary
+        stack = new Stack<TreeNode>();
+        addNode(root);
+
+    }
+
+    /*
+     * @return: True if there has next node, or false
+     */
+    public boolean hasNext() {
+        // write your code here
+        return !stack.isEmpty();
+    }
+
+    /*
+     * @return: return next node
+     */
+    public TreeNode next() {
+        if (stack.isEmpty()){
+            return null;
+        }
+        // write your code here
+        TreeNode cur = stack.pop();
+        addNode(cur.right);
+        return cur;
+    }
+}
