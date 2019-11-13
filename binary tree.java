@@ -1066,6 +1066,8 @@ private TreeNode first = null;
    }
 
 //lintcode 86 Binary Search Tree Iterator
+//如果当前点存在右子树，那么就是右子树中“一路向西”最左边的那个点
+//如果当前点不存在右子树，则是走到当前点的路径中，第一个左拐的点
 public class BSTIterator {
     Stack<TreeNode> stack = null;
 
@@ -1105,4 +1107,134 @@ public class BSTIterator {
         addNode(cur.right);
         return cur;
     }
+}
+
+//lintcode 448 Inorder Successor in BST
+public TreeNode inorderSuccessor(TreeNode root, TreeNode p) {
+       TreeNode res = null;
+       while(root != null){
+           if(root.val > p.val){
+               res = root;
+               root = root.left;
+           }
+           else{
+               root = root.right;
+           }
+       }
+       return res;
+}
+
+//version 2, not elegant but good for understanding bst inorder property
+//首先要确定中序遍历的后继:
+//如果该节点有右子节点, 那么后继是其右子节点的子树中最左端的节点
+//如果该节点没有右子节点, 那么后继是离它最近的祖先, 该节点在这个祖先的左子树内.
+public TreeNode inorderSuccessor(TreeNode root, TreeNode p) {
+        TreeNode successor = null;
+        while (root != null && root.val != p.val) {
+            if (root.val > p.val) {
+                successor = root;
+                root = root.left;
+            } else {
+                root = root.right;
+            }
+        }
+
+        if (root == null) {
+            return null;
+        }
+
+        if (root.right == null) {
+            return successor;
+        }
+
+        root = root.right;
+        while (root.left != null) {
+            root = root.left;
+        }
+
+        return root;
+    }
+//lintcode 85 Insert Node in a Binary Search Tree
+//non recursion
+public TreeNode insertNode(TreeNode root, TreeNode node) {
+       if (root == null) {
+           return node;
+       }
+
+       TreeNode cur = root;
+       TreeNode prev = null;
+       while (cur != null) {
+           prev = cur;
+           cur = cur.val > node.val ? cur.left : cur.right;
+       }
+
+       if (prev.val > node.val) {
+           prev.left = node;
+       } else {
+           prev.right = node;
+       }
+       return root;
+}
+
+//version 2 recursion
+public TreeNode insertNode(TreeNode root, TreeNode node) {
+        if (root == null) {
+            return node;
+        }
+        if (root.val > node.val) {
+            root.left = insertNode(root.left, node);
+        } else {
+            root.right = insertNode(root.right, node);
+        }
+        return root;
+}
+
+//lintcode 87 Remove Node in Binary Search Tree
+//3 cases:
+//1: the target node is a leaf node, simply delete the node
+//2: the target node has right subtree, replace the node with successor value and delte the successor recursively
+//3: the target has only left subtree, replace the node with predecessor value and delte the predecessor recursively
+class Solution {
+  /*
+  One step right and then always left
+  */
+  public int successor(TreeNode root) {
+    root = root.right;
+    while (root.left != null) root = root.left;
+    return root.val;
+  }
+
+  /*
+  One step left and then always right
+  */
+  public int predecessor(TreeNode root) {
+    root = root.left;
+    while (root.right != null) root = root.right;
+    return root.val;
+  }
+
+  public TreeNode deleteNode(TreeNode root, int key) {
+    if (root == null) return null;
+
+    // delete from the right subtree
+    if (key > root.val) root.right = deleteNode(root.right, key);
+    // delete from the left subtree
+    else if (key < root.val) root.left = deleteNode(root.left, key);
+    // delete the current node
+    else {
+      // the node is a leaf
+      if (root.left == null && root.right == null) root = null;
+      // the node is not a leaf and has a right child
+      else if (root.right != null) {
+        root.val = successor(root);
+        root.right = deleteNode(root.right, root.val);
+      }
+      // the node is not a leaf, has no right child, and has a left child
+      else {
+        root.val = predecessor(root);
+        root.left = deleteNode(root.left, root.val);
+      }
+    }
+    return root;
+  }
 }
