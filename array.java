@@ -4,6 +4,7 @@ public int maxSubArray(int[] nums) {
        int max = Integer.MIN_VALUE;
        int sum = 0;
        int min_sum = 0;
+       int hahaha=0;
        for(int num : nums){
            sum += num;
            if(sum - min_sum > max){
