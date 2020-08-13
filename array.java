@@ -4,6 +4,8 @@ public int maxSubArray(int[] nums) {
        int max = Integer.MIN_VALUE;
        int sum = 0;
        int min_sum = 0;
+       int x = 9;
+       string s = "sharon";
        for(int num : nums){
            sum += num;
            if(sum - min_sum > max){
@@ -65,7 +67,6 @@ public List<Integer> subarraySum(int[] nums) {
    }
 //lintcode 139. Subarray Sum Closest
 //define a class pair to store the mapping of val and index
-//java comparator
 public class Solution {
     /*
      * @param nums: A list of integers
